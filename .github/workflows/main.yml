@@ -14,9 +14,9 @@ jobs:
       - name: Extract ZIP
         run: |
           unzip -o JazaPrintBridge.zip
-          echo "Extracted project:"
-          ls -la
-          find JazaPrintBridge -maxdepth 3 -type f
+
+          echo "Project files:"
+          ls -la JazaPrintBridge
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -24,15 +24,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+      - name: Fix Gradle version
+        working-directory: JazaPrintBridge
+        run: |
+          sed -i 's/gradle-[0-9.]*-\(all\|bin\)\.zip/gradle-8.9-\1.zip/' gradle/wrapper/gradle-wrapper.properties
+
+          echo "Gradle wrapper configuration:"
+          cat gradle/wrapper/gradle-wrapper.properties
+
+          chmod +x gradlew
 
       - name: Build APK
         working-directory: JazaPrintBridge
         run: |
-          gradle assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
